@@ -45,7 +45,6 @@ void view_resources(SystemState *state) {
     printf("---------------------------\n");
 }
 
-// Placeholder functions for Stack (Truck Dispatch)
 void push_to_truck(SystemState *state) {
     printf("Function to load truck (Stack) is pending implementation.\n");
 }
