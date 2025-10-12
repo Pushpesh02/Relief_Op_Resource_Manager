@@ -1,10 +1,9 @@
-#ifndef AUTH_H
-#define AUTH_H
+#ifndef USER_H
+#define USER_H
 
 #include "resource.h"
 #include "victim.h"
-#include "truck.h"
 
-void authMenu(Resource** res, VictimQueues* vq, TruckStack* trucks);
+Resource* userMenu(Resource* resHead, VictimQueues* vq);
 
 #endif
