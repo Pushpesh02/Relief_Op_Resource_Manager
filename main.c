@@ -12,7 +12,7 @@ int main() {
     initVictimQueues(&victims);
     initTruckStack(&trucks);
 
-    printf("=== Disaster Relief Resource Management System ===\n");
+    printf("=== Relief Op Resource Management System ===\n");
     authMenu(&resources, &victims, &trucks);
 
     freeResources(resources);
