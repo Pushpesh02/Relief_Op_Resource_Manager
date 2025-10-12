@@ -22,13 +22,5 @@ typedef struct {
     int quantity;
 } Supply;
 
-typedef struct {
-    Resource *resource_head;
-    Victim *queue_head;
-    Victim *queue_tail;
-    Supply truck_stack[MAX_TRUCK_CAPACITY];
-    int stack_top;
-} SystemState;
-
 
 #endif 
