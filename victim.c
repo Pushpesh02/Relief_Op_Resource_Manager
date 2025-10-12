@@ -1,46 +1,88 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "functions.h"
+#include "victim.h"
 
-void enqueue_victim(SystemState *state) {
-    Victim *new_victim = (Victim *)malloc(sizeof(Victim));
-    if (new_victim == NULL) {
-        printf("Memory allocation failed!\n");
-        return;
-    }
+/* Queue basics */
+void initQueue(Queue* q) { q->front = NULL; q->rear = NULL; }
+int isEmpty(Queue* q) { return q->front == NULL; }
 
-    printf("Enter victim's name: ");
-    scanf("%s", new_victim->name);
-    printf("Enter age: ");
-    scanf("%d", &new_victim->age);
-
-
-    if (new_victim->age < 12) {
-        strcpy(new_victim->category, "child");
-    } else if (new_victim->age >= 60) {
-        strcpy(new_victim->category, "senior");
+void enqueue(Queue* q, Victim* v) {
+    v->next = NULL;
+    if (q->rear == NULL) {
+        q->front = v;
+        q->rear = v;
     } else {
-        strcpy(new_victim->category, "adult");
+        q->rear->next = v;
+        q->rear = v;
     }
-    
-    new_victim->next = NULL;
-
-    // Priority queue : children/seniors go to the front
-    if (state->queue_head == NULL) {
-        state->queue_head = new_victim;
-        state->queue_tail = new_victim;
-    } else if (strcmp(new_victim->category, "child") == 0 || strcmp(new_victim->category, "senior") == 0) {
-        new_victim->next = state->queue_head;
-        state->queue_head = new_victim;
-    } else {
-        state->queue_tail->next = new_victim;
-        state->queue_tail = new_victim;
-    }
-
-    printf("Victim '%s' added to the queue as a %s.\n", new_victim->name, new_victim->category);
 }
 
-void dequeue_victim(SystemState *state) {
-    printf("Function to serve victim (Dequeue) is pending implementation.\n");
+Victim* dequeue(Queue* q) {
+    if (q->front == NULL) return NULL;
+    Victim* v = q->front;
+    q->front = v->next;
+    if (q->front == NULL) q->rear = NULL;
+    v->next = NULL;
+    return v;
+}
+
+/* Victim system (two queues) */
+void initVictimQueues(VictimQueues* vq) {
+    initQueue(&vq->priorityQ);
+    initQueue(&vq->normalQ);
+    vq->next_id = 1;
+}
+
+int registerVictim(VictimQueues* vq, char name[], int age) {
+    Victim* v = (Victim*)malloc(sizeof(Victim));
+    if (!v) return 0;
+    v->id = vq->next_id++;
+    strcpy(v->name, name);
+    v->age = age;
+    v->next = NULL;
+
+    if (age <= 12 || age >= 60) enqueue(&vq->priorityQ, v);
+    else enqueue(&vq->normalQ, v);
+    return 1;
+}
+
+Victim* serveNextVictim(VictimQueues* vq) {
+    Victim* v = dequeue(&vq->priorityQ);
+    if (v) return v;
+    return dequeue(&vq->normalQ);
+}
+
+void printQueue(Queue* q, char title[]) {
+    printf("%s\n", title);
+    if (q->front == NULL) {
+        printf("  (none)\n");
+        return;
+    }
+    Victim* cur = q->front;
+    while (cur) {
+        printf("  ID:%d Name:%s Age:%d\n", cur->id, cur->name, cur->age);
+        cur = cur->next;
+    }
+}
+
+void displayVictims(VictimQueues* vq) {
+    printf("\n--- Waiting Victims ---\n");
+    printQueue(&vq->priorityQ, "Priority (children & seniors):");
+    printQueue(&vq->normalQ,   "Normal (adults):");
+}
+
+void freeQueue(Queue* q) {
+    Victim* cur = q->front;
+    while (cur) {
+        Victim* tmp = cur;
+        cur = cur->next;
+        free(tmp);
+    }
+    q->front = q->rear = NULL;
+}
+
+void freeVictimQueues(VictimQueues* vq) {
+    freeQueue(&vq->priorityQ);
+    freeQueue(&vq->normalQ);
 }
