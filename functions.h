@@ -6,13 +6,14 @@
 void add_resource(SystemState *state);
 void view_resources(SystemState *state);
 
+
 void push_to_truck(SystemState *state);
 void pop_from_truck(SystemState *state);
 
-// --- Victim Management (Queue/Priority Queue) ---
-// (To be added later)
 
-// --- Reporting ---
-// (To be added later)
+void enqueue_victim(SystemState *state);
+void dequeue_victim(SystemState *state); 
 
-#endif 
+// --- Reporting (Later) ---
+
+#endif
