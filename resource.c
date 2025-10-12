@@ -1,87 +1,85 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "functions.h"
+#include "resource.h"
 
-// --- Linked List Functions ---
-
-void add_resource(SystemState *state) {
-    Resource *new_resource = (Resource *)malloc(sizeof(Resource));
-    if (new_resource == NULL) {
-        printf("Memory allocation failed!\n");
-        return;
-    }
-
-    printf("Enter resource name: ");
-    scanf("%s", new_resource->name);
-    printf("Enter quantity: ");
-    scanf("%d", &new_resource->quantity);
-
-    new_resource->next = NULL;
-
-    if (state->resource_head == NULL) {
-        state->resource_head = new_resource;
-    } else {
-        Resource *current = state->resource_head;
-        while (current->next != NULL) {
-            current = current->next;
-        }
-        current->next = new_resource;
-    }
-    printf("Resource added successfully!\n");
+Resource* makeNode(char name[], int qty) {
+    Resource* r = (Resource*)malloc(sizeof(Resource));
+    if (!r) return NULL;
+    strcpy(r->name, name);
+    r->quantity = qty;
+    r->next = NULL;
+    return r;
 }
 
-void view_resources(SystemState *state) {
-    if (state->resource_head == NULL) {
-        printf("No resources available.\n");
-        return;
+Resource* findResource(Resource* head, char name[]) {
+    Resource* cur = head;
+    while (cur) {
+        if (strcmp(cur->name, name) == 0) return cur;
+        cur = cur->next;
     }
-    printf("\n--- Available Resources ---\n");
-    Resource *current = state->resource_head;
-    while (current != NULL) {
-        printf("Name: %s, Quantity: %d\n", current->name, current->quantity);
-        current = current->next;
-    }
-    printf("---------------------------\n");
+    return NULL;
 }
 
-void push_to_truck(SystemState *state) {
-    if (state->stack_top >= MAX_TRUCK_CAPACITY - 1) {
-        printf("Truck is full. Cannot load more supplies.\n");
-        return;
+Resource* addResource(Resource* head, char name[], int qty) {
+    if (qty <= 0) return head;
+    Resource* found = findResource(head, name);
+    if (found) {
+        found->quantity += qty;
+        return head;
     }
-
-    char item_name[50];
-    int quantity;
-
-    printf("Enter item name to load: ");
-    scanf("%s", item_name);
-    printf("Enter quantity: ");
-    scanf("%d", &quantity);
-
-    // Find the resource in the linked list and check if there's enough
-    Resource *current = state->resource_head;
-    while(current != NULL) {
-        if (strcmp(current->name, item_name) == 0 && current->quantity >= quantity) {
-            current->quantity -= quantity;
-            state->stack_top++;
-            strcpy(state->truck_stack[state->stack_top].item_name, item_name);
-            state->truck_stack[state->stack_top].quantity = quantity;
-            printf("Loaded %d units of %s onto the truck.\n", quantity, item_name);
-            return;
-        }
-        current = current->next;
+    /* insert at head for simplicity */
+    Resource* node = makeNode(name, qty);
+    if (!node) {
+        printf("Memory error adding resource.\n");
+        return head;
     }
-    printf("Resource not found or insufficient quantity.\n");
+    node->next = head;
+    return node;
 }
 
-void pop_from_truck(SystemState *state) {
-    if (state->stack_top == -1) {
-        printf("Truck is empty. Nothing to dispatch.\n");
+Resource* removeResource(Resource* head, char name[], int qty) {
+    if (qty <= 0) return head;
+    Resource* cur = head;
+    Resource* prev = NULL;
+    while (cur) {
+        if (strcmp(cur->name, name) == 0) break;
+        prev = cur;
+        cur = cur->next;
+    }
+    if (!cur) {
+        printf("Resource '%s' not found.\n", name);
+        return head;
+    }
+    if (cur->quantity > qty) {
+        cur->quantity -= qty;
+        return head;
+    }
+    /* remove node */
+    if (prev) prev->next = cur->next;
+    else head = cur->next;
+    free(cur);
+    return head;
+}
+
+void displayResources(Resource* head) {
+    printf("\n--- Resource Stock ---\n");
+    if (!head) {
+        printf("  (none)\n");
         return;
     }
-    
-    Supply dispatched_item = state->truck_stack[state->stack_top];
-    state->stack_top--;
-    printf("Dispatched %d units of %s.\n", dispatched_item.quantity, dispatched_item.item_name);
+    Resource* cur = head;
+    while (cur) {
+        printf("  %s : %d\n", cur->name, cur->quantity);
+        cur = cur->next;
+    }
+}
+
+void freeResources(Resource* head) {
+    Resource* cur = head;
+    while (cur) {
+        Resource* tmp = cur;
+        cur = cur->next;
+        free(tmp);
+    }
 }
