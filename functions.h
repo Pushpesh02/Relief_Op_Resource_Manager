@@ -1,19 +1,19 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 
-#include "structs.h" 
-
-void add_resource(SystemState *state);
-void view_resources(SystemState *state);
+#include "structs.h"
 
 
-void push_to_truck(SystemState *state);
-void pop_from_truck(SystemState *state);
+void add_resource(Resource **head);
+void view_resources(Resource *head);
+
+void push_to_truck(Resource **r_head, Supply truck[], int *top);
+void pop_from_truck(Supply truck[], int *top);
+
+void enqueue_victim(Victim **head, Victim **tail);
+void dequeue_victim(Victim **head, Victim **tail);
 
 
-void enqueue_victim(SystemState *state);
-void dequeue_victim(SystemState *state); 
+void generate_report(Resource *r_head, Victim *v_head, Supply truck[], int top);
 
-// --- Reporting (Later) ---
-
-#endif
+#endif 
