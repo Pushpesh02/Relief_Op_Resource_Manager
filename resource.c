@@ -1,85 +1,58 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include "resource.h"
+#include "truck.h"
 
-Resource* makeNode(char name[], int qty) {
-    Resource* r = (Resource*)malloc(sizeof(Resource));
-    if (!r) return NULL;
-    strcpy(r->name, name);
-    r->quantity = qty;
-    r->next = NULL;
-    return r;
+void initTruckStack(TruckStack* s) { s->top = -1; }
+
+int pushTruck(TruckStack* s, int id, char item[], int qty) {
+    if (s->top >= STACK_MAX - 1) return 0;
+    s->top++;
+    s->data[s->top].id = id;
+    strcpy(s->data[s->top].item, item);
+    s->data[s->top].qty = qty;
+    return 1;
 }
 
-Resource* findResource(Resource* head, char name[]) {
-    Resource* cur = head;
-    while (cur) {
-        if (strcmp(cur->name, name) == 0) return cur;
-        cur = cur->next;
+int popTruck(TruckStack* s, TruckLoad* out) {
+    if (s->top < 0) return 0;
+    if (out) {
+        out->id = s->data[s->top].id;
+        strcpy(out->item, s->data[s->top].item);
+        out->qty = s->data[s->top].qty;
     }
-    return NULL;
+    s->top--;
+    return 1;
 }
 
-Resource* addResource(Resource* head, char name[], int qty) {
-    if (qty <= 0) return head;
-    Resource* found = findResource(head, name);
-    if (found) {
-        found->quantity += qty;
-        return head;
-    }
-    /* insert at head for simplicity */
-    Resource* node = makeNode(name, qty);
-    if (!node) {
-        printf("Memory error adding resource.\n");
-        return head;
-    }
-    node->next = head;
-    return node;
-}
-
-Resource* removeResource(Resource* head, char name[], int qty) {
-    if (qty <= 0) return head;
-    Resource* cur = head;
-    Resource* prev = NULL;
-    while (cur) {
-        if (strcmp(cur->name, name) == 0) break;
-        prev = cur;
-        cur = cur->next;
-    }
-    if (!cur) {
-        printf("Resource '%s' not found.\n", name);
-        return head;
-    }
-    if (cur->quantity > qty) {
-        cur->quantity -= qty;
-        return head;
-    }
-    /* remove node */
-    if (prev) prev->next = cur->next;
-    else head = cur->next;
-    free(cur);
-    return head;
-}
-
-void displayResources(Resource* head) {
-    printf("\n--- Resource Stock ---\n");
-    if (!head) {
-        printf("  (none)\n");
-        return;
-    }
-    Resource* cur = head;
-    while (cur) {
-        printf("  %s : %d\n", cur->name, cur->quantity);
-        cur = cur->next;
+void displayTrucks(TruckStack* s) {
+    printf("\n--- Loaded Trucks (top first) ---\n");
+    if (s->top < 0) { printf("  (none)\n"); return; }
+    int i;
+    for (i = s->top; i >= 0; i--) {
+        printf("  Truck %d : %s x %d\n", s->data[i].id, s->data[i].item, s->data[i].qty);
     }
 }
 
-void freeResources(Resource* head) {
-    Resource* cur = head;
-    while (cur) {
-        Resource* tmp = cur;
-        cur = cur->next;
-        free(tmp);
+/* File IO (simple): each line: id item qty */
+int saveTrucks(TruckStack* s, const char path[]) {
+    FILE* f = fopen(path, "w");
+    if (!f) return 0;
+    int i;
+    for (i = 0; i <= s->top; i++) {
+        fprintf(f, "%d %s %d\n", s->data[i].id, s->data[i].item, s->data[i].qty);
     }
+    fclose(f);
+    return 1;
+}
+
+int loadTrucks(TruckStack* s, const char path[]) {
+    FILE* f = fopen(path, "r");
+    if (!f) return 0;
+    initTruckStack(s);
+    int id, qty; char item[50];
+    while (fscanf(f, "%d %49s %d", &id, item, &qty) == 3) {
+        if (!pushTruck(s, id, item, qty)) break;
+    }
+    fclose(f);
+    return 1;
 }
