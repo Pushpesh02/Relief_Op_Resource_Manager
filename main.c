@@ -1,21 +1,28 @@
 #include <stdio.h>
-#include "auth.h"
 #include "resource.h"
 #include "victim.h"
 #include "truck.h"
 
+void authMenu(Resource** pres, VictimQueues* pvq, TruckStack* ptrucks);
+int loadResources(char path[]);
 int main() {
     Resource* resources = NULL;
-    VictimQueues victims;
+    VictimQueues vq;
     TruckStack trucks;
 
-    initVictimQueues(&victims);
+    initVictimQueues(&vq);
     initTruckStack(&trucks);
 
-    printf("=== Relief Op Resource Management System ===\n");
-    authMenu(&resources, &victims, &trucks);
+    resources = loadResources("resources.txt");
+    loadVictims(&vq, "victims.txt");
+    loadTrucks(&trucks, "trucks.txt");
+
+    printf("=== Disaster Relief Resource Management System (Phase-2) ===\n");
+    authMenu(&resources, &vq, &trucks);
+
 
     freeResources(resources);
-    freeVictimQueues(&victims);
+    freeVictimQueues(&vq);
+
     return 0;
 }
