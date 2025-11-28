@@ -1,25 +1,24 @@
-#ifndef RESOURCE_H
-#define RESOURCE_H
+#ifndef TRUCK_H
+#define TRUCK_H
 
-typedef struct Resource {
-    char name[50];
-    int quantity;
-    struct Resource* next;
-} Resource;
+#define STACK_MAX 50
 
+typedef struct {
+    int id;
+    char item[50];
+    int qty;
+} TruckLoad;
 
-Resource* addResource(Resource* head, char name[], int qty);
+typedef struct {
+    TruckLoad data[STACK_MAX];
+    int top;
+} TruckStack;
 
-
-Resource* removeResource(Resource* head, char name[], int qty);
-
-
-Resource* findResource(Resource* head, char name[]);
-
-
-void displayResources(Resource* head);
-
-void freeResources(Resource* head);
-
+void initTruckStack(TruckStack* s);
+int pushTruck(TruckStack* s, int id, char item[], int qty);
+int popTruck(TruckStack* s, TruckLoad* out);
+void displayTrucks(TruckStack* s);
+int saveTrucks(TruckStack* s, const char path[]);
+int loadTrucks(TruckStack* s, const char path[]);
 
 #endif
