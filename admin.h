@@ -5,6 +5,6 @@
 #include "victim.h"
 #include "truck.h"
 
-Resource* adminMenu(Resource* resHead, VictimQueues* vqs, TruckStack* trucks);
+Resource* adminMenu(Resource* resHead, VictimQueues* vq, TruckStack* trucks);
 
 #endif
